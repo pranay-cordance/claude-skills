@@ -1,0 +1,65 @@
+# .github/workflows/deploy.yml: test, validate Skills, build, staging, approval, prod.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write   # GitHub OIDC to AWS: no long-lived keys
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPO: ${{ vars.ECR_REPO }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt pytest pyyaml
+      - run: pytest -q
+      - run: python scripts/validate_skills.py .claude/skills
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.CI_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+      - name: Build and push
+        run: |
+          IMAGE=${{ steps.ecr.outputs.registry }}/$ECR_REPO:$IMAGE_TAG
+          docker build -t $IMAGE .
+          docker push $IMAGE
+      # Add an image scan here (ECR enhanced scanning or Trivy) and fail on critical findings.
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy (IaC apply or ECS update with the new image tag)
+        run: ./deploy/deploy.sh staging "$IMAGE_TAG"
+      - run: pip install boto3 requests && python scripts/smoke_test.py --url ${{ vars.STAGING_URL }}
+
+  deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production   # configure required reviewers on this environment = manual approval
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: ./deploy/deploy.sh prod "$IMAGE_TAG"
+      - run: pip install boto3 requests && python scripts/smoke_test.py --url ${{ vars.PROD_URL }}

@@ -1,0 +1,11 @@
+{
+  "name": "cordance-claude-skills",
+  "owner": { "name": "Cordance" },
+  "plugins": [
+    {
+      "name": "claude-skills",
+      "source": "./",
+      "description": "Architect Claude-powered apps (Agent SDK, MCP, Skills, RAG, routing) and deploy them and their skills to AWS with Amazon Bedrock."
+    }
+  ]
+}

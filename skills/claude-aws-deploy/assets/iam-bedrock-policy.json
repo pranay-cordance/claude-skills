@@ -1,0 +1,27 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InvokeClaudeOnBedrock",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:*:<ACCOUNT_ID>:inference-profile/<PROFILE_ID_DEFAULT>",
+        "arn:aws:bedrock:*:<ACCOUNT_ID>:inference-profile/<PROFILE_ID_LIGHT>",
+        "arn:aws:bedrock:*::foundation-model/anthropic.*"
+      ]
+    },
+    {
+      "Sid": "DiscoverProfiles",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:GetInferenceProfile",
+        "bedrock:ListInferenceProfiles"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

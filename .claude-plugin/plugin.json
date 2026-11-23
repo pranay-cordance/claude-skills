@@ -1,0 +1,6 @@
+{
+  "name": "claude-skills",
+  "version": "1.0.0",
+  "description": "Architect Claude-powered apps and deploy them and their skills to AWS with Amazon Bedrock.",
+  "author": { "name": "Cordance" }
+}

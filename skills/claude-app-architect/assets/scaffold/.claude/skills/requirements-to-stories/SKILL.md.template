@@ -1,0 +1,12 @@
+---
+name: requirements-to-stories
+description: Convert product requirements, meeting notes or feature requests into structured specs and Jira-ready user stories with acceptance criteria. Use whenever a user shares requirements or asks for stories, tickets, epics or acceptance criteria.
+---
+
+# Requirements to stories
+
+1. Restate the requirement in one sentence and list any assumptions.
+2. Split it into stories that each deliver user-visible value and fit in one sprint.
+3. For each story write: title, "As a <role>, I want <capability>, so that <outcome>", and 3–6 acceptance criteria in Given/When/Then form.
+4. Flag open questions instead of guessing.
+5. Create drafts with `create_story_draft` and show them to the user for approval.
